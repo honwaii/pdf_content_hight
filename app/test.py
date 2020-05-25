@@ -1,38 +1,17 @@
-#!/usr/bin/python
+# !/usr/bin/python
 # -*- coding: utf-8 -*-
-# @Time    : 2020/5/24 0024 15:21
+# @Time    : 2020/5/24 0024 15:38
 # @Author  : honwaii
 # @Email   : honwaii@126.com
-# @File    : file_handler.py
-
+# @File    : test.py
 import os
 import re
 from functools import reduce
 
-import gensim as gensim
-
-from app.util.cfg_operator import config
+import gensim
 import jieba
-import pandas as pd
-
-
-def pdf_convert(file=None):
-    current_path = os.getcwd()
-    print(current_path)
-    os.system('COPY ".\\datas\\temp.pdf" "D:\\pdf2htmlEX\\works\\"')
-    os.chdir("D:/pdf2htmlEX")
-    # print(os.getcwd())
-    os.system('pdf2htmlEX.exe --zoom 1.8  --dest-dir ".\\works" ".\\works\\temp.pdf"')
-    if os.path.exists('.\\works\\temp.html'):
-        os.system('move ".\\works\\temp.html" "' + current_path + '\\datas\\temp.html"')
-        os.chdir(current_path)
-    return
-
-
-def extract_text():
-    os.system('pdf2txt.py -o ".\\datas\\temp.txt" -t text ".\\datas\\temp.pdf"')
-    print("转换成文本完成")
-    return
+import jieba.analyse
+from app.util.cfg_operator import config
 
 
 def handle_content():
@@ -51,10 +30,27 @@ def handle_content():
         if each in stop_words:
             continue
         result.append(each)
-    return result
+
+    sentence = reduce(lambda x, y: x + y, result)
+    keywords = jieba.analyse.extract_tags(sentence, topK=20, withWeight=True, allowPOS=('n', 'nr', 'ns'))
+    print(keywords)
+    return keywords
 
 
 def load_word_embedding_model():
-    path = config.get_config('')
+    path = config.get_config('word_embedding_path')
     word_embedding = gensim.models.Word2Vec.load(path)
     return word_embedding
+
+
+def result_words():
+    word_embedding = load_word_embedding_model()
+    key_words = handle_content()
+    result = []
+    for each in key_words:
+        t = word_embedding.most_similar(positive=each[0], topn=5)
+        result.append(t)
+        print(t)
+
+
+result_words()

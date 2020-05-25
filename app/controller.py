@@ -33,6 +33,7 @@ def upload():
         return '上传的不是pdf文件。'
     file.save('./datas/temp.pdf')
     file_handler.pdf_convert()
+    file_handler.extract_text()
     return redirect(url_for('index'))
 
 
