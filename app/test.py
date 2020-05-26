@@ -12,6 +12,7 @@ import gensim
 import jieba
 import jieba.analyse
 from app.util.cfg_operator import config
+from bs4 import BeautifulSoup
 
 
 def handle_content():
@@ -48,9 +49,29 @@ def result_words():
     key_words = handle_content()
     result = []
     for each in key_words:
-        t = word_embedding.most_similar(positive=each[0], topn=5)
-        result.append(t)
-        print(t)
+        try:
+            t = word_embedding.most_similar(positive=each[0], topn=5)
+            result.append(t)
+            print(each[0] + ":" + str(t))
+        except KeyError:
+            print(each[0])
+            continue
 
 
-result_words()
+def parse_html():
+    soup = BeautifulSoup(open('.\\datas\\test.html', encoding='utf-8'), features='html.parser')
+    head = soup.head
+    style = soup.new_tag('style')
+    style.string = 'mark{background-color:#00ff90; font-weight:bold;}'
+    head.append(style)
+
+    body = soup.body
+    mark = soup.new_tag('mark')
+    mark.string = 'hello world'
+    body.append(mark)
+    print(soup)
+
+    return
+
+
+parse_html()
