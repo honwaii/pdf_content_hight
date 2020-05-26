@@ -50,28 +50,38 @@ def result_words():
     result = []
     for each in key_words:
         try:
-            t = word_embedding.most_similar(positive=each[0], topn=5)
-            result.append(t)
-            print(each[0] + ":" + str(t))
+            similar = word_embedding.most_similar(positive=each[0], topn=5)
+            result.append(similar)
         except KeyError:
-            print(each[0])
             continue
+    words = []
+    for each in result:
+        for e in each:
+            words.append(e[0])
+    return words
 
 
-def parse_html():
-    soup = BeautifulSoup(open('.\\datas\\test.html', encoding='utf-8'), features='html.parser')
+def parse_html_and_add_style():
+    soup = BeautifulSoup(open('.\\datas\\temp.html', encoding='utf-8'), features='html.parser')
     head = soup.head
     style = soup.new_tag('style')
     style.string = 'mark{background-color:#00ff90; font-weight:bold;}'
     head.append(style)
-
-    body = soup.body
-    mark = soup.new_tag('mark')
-    mark.string = 'hello world'
-    body.append(mark)
-    print(soup)
-
-    return
+    return soup
 
 
-parse_html()
+def highlight_word(word, doc):
+    highlight = "<mark>" + word + "</mark>"
+    doc = doc.replace(word, highlight)
+    return doc
+
+
+words = result_words()
+print(words)
+doc = parse_html_and_add_style()
+for word in words:
+    doc = highlight_word(word, str(doc))
+with open('.\\datas\\result.html', 'w', encoding='utf-8') as f:
+    f.writelines(doc)
+    f.flush()
+    f.close()
