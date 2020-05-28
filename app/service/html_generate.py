@@ -36,31 +36,34 @@ def handle_content():
         result.append(each)
 
     sentence = reduce(lambda x, y: x + y, result)
-    keywords = jieba.analyse.extract_tags(sentence, topK=20, withWeight=True, allowPOS=('n', 'nr', 'ns'))
+    keywords = jieba.analyse.textrank(sentence, topK=20, withWeight=True, allowPOS=('n', 'nr', 'ns'))
     print(keywords)
     return keywords
 
 
 def load_word_embedding_model(path=None):
     path = config.get_config('word_embedding_path')
-    # word_embedding = gensim.models.Word2Vec.load(path)
-    word_vector_model = KeyedVectors.load_word2vec_format(path)
-    return word_vector_model
+    word_embedding = gensim.models.Word2Vec.load(path)
+    # word_embedding = KeyedVectors.load_word2vec_format(path)
+    return word_embedding
 
 
 def result_words():
     key_words = handle_content()
     result = []
+    words = []
     for each in key_words:
         try:
             similar = word_embedding.most_similar(positive=each[0], topn=5)
             result.append(similar)
+            words.append(each[0])
         except KeyError:
             continue
-    words = []
+
     for each in result:
         for e in each:
             words.append(e[0])
+
     return words
 
 
@@ -84,6 +87,7 @@ def highlight_word(word, doc):
 
 def get_highlight_content():
     words = result_words()
+    print(words)
     head, body = parse_html_and_add_style()
     temp = '<!DOCTYPE html> \n \
     <html xmlns="http://www.w3.org/1999/xhtml">'
