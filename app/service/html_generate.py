@@ -3,20 +3,23 @@
 # @Time    : 2020/5/24 0024 15:38
 # @Author  : honwaii
 # @Email   : honwaii@126.com
-# @File    : test.py
-import os
+# @File    : html_generate.py
 import re
 from functools import reduce
 
 import gensim
 import jieba
 import jieba.analyse
-from app.util.cfg_operator import config
 from bs4 import BeautifulSoup
+from gensim.models import KeyedVectors
+
+from app.util.cfg_operator import config
 
 
 def handle_content():
-    with open('.\\datas\\temp.txt', encoding='utf-8') as file:
+    load_word_embedding_model()
+
+    with open('./datas/temp.txt', encoding='utf-8') as file:
         docs = file.readlines()
         doc = reduce(lambda x, y: x + y, docs)
     doc = doc.replace("\r", "").replace("\n", "")
@@ -38,14 +41,14 @@ def handle_content():
     return keywords
 
 
-def load_word_embedding_model():
+def load_word_embedding_model(path=None):
     path = config.get_config('word_embedding_path')
-    word_embedding = gensim.models.Word2Vec.load(path)
-    return word_embedding
+    # word_embedding = gensim.models.Word2Vec.load(path)
+    word_vector_model = KeyedVectors.load_word2vec_format(path)
+    return word_vector_model
 
 
 def result_words():
-    word_embedding = load_word_embedding_model()
     key_words = handle_content()
     result = []
     for each in key_words:
@@ -62,12 +65,15 @@ def result_words():
 
 
 def parse_html_and_add_style():
-    soup = BeautifulSoup(open('.\\datas\\temp.html', encoding='utf-8'), features='html.parser')
+    soup = BeautifulSoup(open('./datas/temp.html', encoding='utf-8'), features='html.parser')
     head = soup.head
+    body = soup.body
     style = soup.new_tag('style')
-    style.string = 'mark{background-color:#00ff90; font-weight:bold;}'
+    style.string = 'mark{background-color:#ffff00; font-weight:bold;}'
     head.append(style)
-    return soup
+    head = str(head).replace("{#", "{ #")
+    body = str(body).replace("{#", "{ #")
+    return head, body
 
 
 def highlight_word(word, doc):
@@ -76,12 +82,21 @@ def highlight_word(word, doc):
     return doc
 
 
-words = result_words()
-print(words)
-doc = parse_html_and_add_style()
-for word in words:
-    doc = highlight_word(word, str(doc))
-with open('.\\datas\\result.html', 'w', encoding='utf-8') as f:
-    f.writelines(doc)
-    f.flush()
-    f.close()
+def get_highlight_content():
+    words = result_words()
+    head, body = parse_html_and_add_style()
+    temp = '<!DOCTYPE html> \n \
+    <html xmlns="http://www.w3.org/1999/xhtml">'
+    for word in words:
+        body = highlight_word(word, body)
+    with open('./templates/result.html', 'w', encoding='utf-8') as f:
+        f.write(temp)
+        f.write(head)
+        f.writelines(body)
+        f.write('</html>')
+        f.flush()
+        f.close()
+    return
+
+
+word_embedding = load_word_embedding_model()

@@ -8,13 +8,18 @@
 <main>
     <div class="container">
         <div class="row">
-            <div class="col-md-12 text-md-center" style="height:80px;top: 20px;font-size:125%">文档上传</div>
+            <div class="col-md-12 text-md-center" style="height:120px;top: 20px;font-size:200%;">PDF文档高亮</div>
         </div>
         <div class="row">
-            <form action="/upload" method=post enctype=multipart/form-data>
-                <p><input type=file name=file>
-                    <input type=submit value=Upload></p>
-            </form>
+            <div class="col-md-12 text-md-center " style="height:100px;top: 20px;font-size:150%;">
+                <form action="/upload" method=post enctype=multipart/form-data>
+                    <p><input type=file name=file style="cursor:hand">
+                        <input type=submit value=确认></p>
+                </form>
+            </div>
+        </div>
+        <div class="row">
+            <a href="{{url_for('highlight')}}">获取高亮文本</a>
         </div>
     </div>
 </main>
@@ -64,6 +69,18 @@ var FileInput = function () {
 }
     return oFile;
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
